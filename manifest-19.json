@@ -1,0 +1,20 @@
+{
+  "name": "Smart Gmail Manager",
+  "short_name": "Gmail Manager",
+  "description": "مساعد ذكي لإدارة البريد الإلكتروني وتصنيف الرسائل حسب الأولوية",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#3557d6",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM2IiBmaWxsPSIjMzU1N2Q2Ii8+PHBhdGggZD0iTTQwIDY2djYwaDExMlY2Nkw5NiAxMDIgNDAgNjZ6IiBmaWxsPSIjZmZmIi8+PC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

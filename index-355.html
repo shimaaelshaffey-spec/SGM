@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Gmail Manager</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3557d6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<!-- build 1.00 -->
+<meta name="description" content="Smart Gmail Manager - مساعد ذكي لإدارة Gmail">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+:root{
+  --bg:#f4f7fb;--panel:#fff;--text:#172033;--muted:#718096;--line:#e5eaf1;
+  --primary:#3557d6;--primary2:#eef2ff;--urgent:#dc2626;--important:#eab308;
+  --reply:#16a34a;--follow:#2563eb;--info:#64748b;--promo:#7c3aed;
+  --shadow:0 10px 30px rgba(31,41,55,.08);--radius:18px;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:Cairo,Tahoma,"Segoe UI",Arial,sans-serif;color:var(--text)}
+button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
+.top{height:74px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:0 24px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;min-width:250px}.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#3557d6,#6d7ff0);color:#fff;display:grid;place-items:center;font-size:20px}
+.search{flex:1;max-width:720px;background:#f1f4f9;border:1px solid #e7ebf2;border-radius:14px;padding:12px 16px;display:flex;gap:10px}.search input{border:0;outline:0;background:transparent;width:100%}
+.account{margin-right:auto;display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;background:#dbe4ff;display:grid;place-items:center;color:#2944a7;font-weight:800}
+.layout{display:grid;grid-template-columns:230px 1fr;direction:ltr;min-height:calc(100vh - 74px)}.side{direction:rtl;background:#fff;border-left:1px solid var(--line);padding:20px 14px}.main{direction:rtl;padding:24px;max-width:1500px;width:100%;margin:auto}
+.navbtn{width:100%;padding:11px 13px;border-radius:11px;background:transparent;text-align:right;color:#445066;margin:3px 0}.navbtn:hover,.navbtn.active{background:var(--primary2);color:var(--primary);font-weight:700}
+.connect{background:var(--primary);color:#fff;border-radius:12px;padding:12px 14px;width:100%;font-weight:700;margin-bottom:18px}
+.status{font-size:12px;color:var(--muted);padding:10px 4px;line-height:1.6}
+h1{margin:0 0 6px;font-size:27px}.sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:17px}.stat{min-height:104px}.stat .label{color:var(--muted);font-size:12px}.stat .num{font-size:28px;font-weight:800;margin-top:9px}.stat.urgent{border-top:4px solid var(--urgent)}.stat.important{border-top:4px solid var(--important)}.stat.reply{border-top:4px solid var(--reply)}.stat.follow{border-top:4px solid var(--follow)}
+.two{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.sectionhead h2{font-size:17px;margin:0}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.btn{background:#f4f6fa;border:1px solid var(--line);padding:9px 12px;border-radius:10px}.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}.btn.green{background:#eaf8ef;color:#14783b;border-color:#c9efd6}.btn.red{background:#fff0f0;color:#b91c1c;border-color:#ffd2d2}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.chip{padding:7px 10px;border-radius:999px;background:#f4f6fa;border:1px solid var(--line);font-size:12px}.chip.active{background:var(--primary2);color:var(--primary);border-color:#cbd5ff}
+.mail{border:1px solid var(--line);border-radius:14px;padding:14px;margin:9px 0;background:#fff;display:grid;grid-template-columns:8px 1fr auto;gap:12px;align-items:center}.bar{border-radius:8px;height:58px}.bar.urgent{background:var(--urgent)}.bar.important{background:var(--important)}.bar.reply{background:var(--reply)}.bar.follow{background:var(--follow)}.bar.info{background:var(--info)}.bar.promo{background:var(--promo)}
+.mail:hover{box-shadow:0 7px 20px rgba(30,41,59,.08)}.sender{font-weight:800;font-size:13px}.subject{font-weight:700;margin:5px 0}.snippet{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:700px}.meta{font-size:11px;color:var(--muted);text-align:left}.badge{display:inline-block;padding:4px 7px;border-radius:7px;font-size:10px;font-weight:800;margin-top:5px}.b-urgent{background:#fee2e2;color:#991b1b}.b-important{background:#fef3c7;color:#854d0e}.b-reply{background:#dcfce7;color:#166534}.b-follow{background:#dbeafe;color:#1d4ed8}.b-info{background:#e2e8f0;color:#475569}.b-promo{background:#ede9fe;color:#6d28d9}
+.insight{display:flex;gap:10px;padding:12px;border-bottom:1px solid var(--line);font-size:12px;line-height:1.7}.insight:last-child{border-bottom:0}.dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:none}.empty{text-align:center;padding:35px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.show{display:flex}.modalbox{background:#fff;width:min(900px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:22px;box-shadow:0 25px 80px rgba(0,0,0,.2)}.modalhead{display:flex;justify-content:space-between;gap:15px}.close{background:#f1f3f7;border-radius:9px;padding:7px 11px}.bodymail{white-space:pre-wrap;line-height:1.9;font-size:14px;background:#fafbfc;border:1px solid var(--line);padding:15px;border-radius:13px;margin:15px 0}.compose textarea{width:100%;min-height:220px;border:1px solid var(--line);border-radius:12px;padding:13px;resize:vertical;outline:none}.replybox{background:#f6f8ff;border:1px solid #dce3ff;border-radius:14px;padding:15px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{margin:3px 0}.toast{position:fixed;bottom:18px;right:18px;left:18px;max-width:520px;margin:auto;z-index:99;background:#172033;color:#fff;padding:13px 16px;border-radius:13px;box-shadow:0 12px 34px rgba(0,0,0,.25);font-size:13px;line-height:1.7;display:none;word-break:break-word}
+.toast.show{display:block}.toast.err{background:#7f1d1d}.toast.ok{background:#14532d}
+.origin{font-family:monospace;direction:ltr;display:inline-block;background:#f1f4f9;border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-top:6px}
+.notice{padding:12px 14px;border-radius:12px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;font-size:12px;line-height:1.7;margin-bottom:15px}
+.report{line-height:1.9}.report h3{margin:18px 0 8px}.report table{width:100%;border-collapse:collapse}.report th,.report td{border-bottom:1px solid var(--line);padding:8px;text-align:right;font-size:12px}
+footer{color:#94a3b8;text-align:center;font-size:11px;padding:22px}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.layout{grid-template-columns:190px 1fr}}
+@media(max-width:760px){.top{padding:0 12px}.brand{min-width:auto}.brand span{display:none}.layout{display:block}.side{display:none}.main{padding:14px}.grid{grid-template-columns:repeat(2,1fr)}.search{display:none}.mail{grid-template-columns:6px 1fr}.meta{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="logo">✦</div><span>Smart Gmail Manager</span></div>
+  <div class="search"><span>⌕</span><input id="searchInput" placeholder="ابحث في Gmail أو اكتب طلبًا ذكيًا..." onkeydown="if(event.key==='Enter')runSearch()"><button class="btn" onclick="runSearch()">بحث</button></div>
+  <div class="account"><div id="accountText" class="status">غير متصل</div><div class="avatar">S</div></div>
+</header>
+
+<div class="layout">
+<aside class="side">
+  <button class="connect" id="connectBtn" onclick="connectGoogle()">🔐 الاتصال بـ Gmail</button>
+  <div class="status" id="authStatus">يتم الاتصال من المتصفح مباشرة عبر Google OAuth. لا تدخل كلمة مرور Gmail داخل التطبيق.</div>
+  <button class="navbtn active" onclick="showView('dashboard',this)">🏠 لوحة التحكم</button>
+  <button class="navbtn" onclick="setFilter('all',this)">📥 البريد الوارد</button>
+  <button class="navbtn" onclick="setFilter('urgent',this)">🔴 عاجل</button>
+  <button class="navbtn" onclick="setFilter('important',this)">🟡 مهم</button>
+  <button class="navbtn" onclick="setFilter('reply',this)">🟢 يحتاج رد</button>
+  <button class="navbtn" onclick="setFilter('follow',this)">🔵 للمتابعة</button>
+  <button class="navbtn" onclick="setFilter('promo',this)">🟣 نشرات وترويجية</button>
+  <button class="navbtn" onclick="showReport()">📊 التقارير</button>
+  <button class="navbtn" onclick="showSettings()">⚙️ الإعدادات</button>
+</aside>
+
+<main class="main">
+  <section id="dashboard">
+    <h1>مركز إدارة البريد الذكي</h1>
+    <div class="sub" id="welcome">اتصلي بحساب Gmail لبدء المراجعة الذكية.</div>
+    <div id="notice"></div>
+
+    <div class="grid">
+      <div class="card stat"><div class="label">إجمالي البريد الظاهر</div><div class="num" id="sTotal">—</div></div>
+      <div class="card stat"><div class="label">غير المقروء</div><div class="num" id="sUnread">—</div></div>
+      <div class="card stat urgent"><div class="label">🔴 عاجل</div><div class="num" id="sUrgent">—</div></div>
+      <div class="card stat important"><div class="label">🟡 مهم</div><div class="num" id="sImportant">—</div></div>
+      <div class="card stat reply"><div class="label">🟢 يحتاج رد</div><div class="num" id="sReply">—</div></div>
+      <div class="card stat follow"><div class="label">🔵 للمتابعة</div><div class="num" id="sFollow">—</div></div>
+    </div>
+
+    <div class="two">
+      <div class="card">
+        <div class="sectionhead"><h2>⚡ يحتاج تدخلك</h2><div class="toolbar"><button class="btn" onclick="refreshMail()">↻ تحديث</button><button class="btn primary" onclick="showReport()">📄 التقرير</button></div></div>
+        <div class="filters">
+          <button class="chip active" onclick="setLocalFilter('all',this)">الكل</button>
+          <button class="chip" onclick="setLocalFilter('urgent',this)">🔴 عاجل</button>
+          <button class="chip" onclick="setLocalFilter('important',this)">🟡 مهم</button>
+          <button class="chip" onclick="setLocalFilter('reply',this)">🟢 يحتاج رد</button>
+          <button class="chip" onclick="setLocalFilter('follow',this)">🔵 متابعة</button>
+        </div>
+        <div id="mailList"><div class="empty">لا توجد بيانات بعد.</div></div>
+      </div>
+      <div class="card">
+        <div class="sectionhead"><h2>🧠 التحليل التنفيذي</h2></div>
+        <div id="insights"><div class="empty">سيظهر هنا ملخص ما يحتاج إلى إجراء.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reportSection" style="display:none">
+    <div class="sectionhead"><div><h1>التقرير الذكي</h1><div class="sub">تحليل الرسائل والإجراءات المقترحة</div></div><div class="toolbar"><button class="btn" onclick="showView('dashboard')">← العودة</button><button class="btn primary" onclick="exportPDF()">⬇ تصدير PDF</button><button class="btn" onclick="window.print()">🖨 طباعة</button></div></div>
+    <div class="card report" id="reportContent"></div>
+  </section>
+
+  <section id="settingsSection" style="display:none">
+    <div class="sectionhead"><div><h1>الإعدادات</h1><div class="sub">إدارة الاتصال والتحليل وتجربة الاستخدام</div></div><button class="btn" onclick="showView('dashboard')">← العودة</button></div>
+    <div class="card">
+      <h3>Google OAuth</h3>
+      <p class="sub">أدخلي Client ID الخاص بتطبيق Web Application من Google Cloud. لا تضعي Client Secret هنا.</p>
+      <div class="row"><input id="clientId" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px" placeholder="xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"><button class="btn primary" onclick="saveClientId()">حفظ Client ID</button></div>
+      <p class="sub" style="margin-top:14px">سجّل هذا العنوان حرفياً فى <b>Authorized JavaScript origins</b> داخل Google Cloud Console (بدون شرطة فى آخره):</p>
+      <div class="origin" id="originBox">—</div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+      <h3>نطاق المراجعة</h3>
+      <div class="row">
+        <select id="dateRange" style="padding:10px;border:1px solid var(--line);border-radius:10px">
+          <option value="1">اليوم</option><option value="7" selected>آخر 7 أيام</option><option value="30">آخر 30 يومًا</option><option value="90">آخر 90 يومًا</option><option value="all">كل البريد المتاح</option>
+        </select>
+        <label><input type="checkbox" id="includeSent"> تضمين المرسل</label>
+        <label><input type="checkbox" id="includeArchive" checked> تضمين المؤرشف</label>
+        <label><input type="checkbox" id="includeSpamTrash"> تضمين Spam وTrash</label>
+      </div>
+      <p class="sub">الإعدادات تحفظ محليًا في هذا المتصفح فقط.</p>
+      <button class="btn red" onclick="disconnect()">تسجيل الخروج وحذف جلسة الاتصال</button>
+    </div>
+  </section>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal" id="mailModal"><div class="modalbox" id="mailModalBox"></div></div>
+<footer>Smart Gmail Manager • build 1.00 • الاتصال يتم مباشرة مع Gmail بعد OAuth</footer>
+
+<script>
+const SCOPES='https://www.googleapis.com/auth/gmail.modify';
+const GMAIL='https://gmail.googleapis.com/gmail/v1/users/me';
+let accessToken=null, tokenClient=null, mails=[], selectedFilter='all', localFilter='all', profile=null;
+
+const $=id=>document.getElementById(id);
+function notify(msg,kind){var t=$('toast');if(!t){return}t.className='toast show'+(kind?' '+kind:'');t.textContent=msg;clearTimeout(window._tt);window._tt=setTimeout(function(){t.className='toast'},9000);}
+function categoryEn(c){return ({urgent:'URGENT',important:'IMPORTANT',reply:'NEEDS REPLY',follow:'FOLLOW-UP',info:'INFO',promo:'PROMO'})[c]||c;}
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function b64decode(data){try{data=data.replace(/-/g,'+').replace(/_/g,'/');return decodeURIComponent(atob(data).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));}catch(e){try{return atob(data)}catch(_){return ''}}}
+function header(msg,name){return (msg.payload?.headers||[]).find(h=>h.name.toLowerCase()===name.toLowerCase())?.value||'';}
+function bodyFromPayload(p){
+  if(!p)return '';
+  if(p.body?.data)return b64decode(p.body.data);
+  if(p.parts){for(const part of p.parts){const t=(part.mimeType||'').toLowerCase();if(t==='text/plain'&&part.body?.data)return b64decode(part.body.data);}}
+  if(p.parts){for(const part of p.parts){const x=bodyFromPayload(part);if(x)return x;}}
+  return '';
+}
+function cleanText(s){return (s||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();}
+function classify(m){
+  const text=(m.subject+' '+m.snippet+' '+m.body).toLowerCase();
+  const urgentWords=['urgent','asap','immediately','today','tomorrow','deadline','action required','final notice','عاجل','فوراً','اليوم','غدا','موعد نهائي','مطلوب فوراً'];
+  const importantWords=['important','meeting','conference','invitation','project','approval','request','please','مهم','اجتماع','مؤتمر','دعوة','مشروع','موافقة','طلب'];
+  const replyWords=['please confirm','please reply','let me know','can you','could you','would you','kindly','please provide','confirm your','هل يمكنك','يرجى','برجاء','يرجى تأكيد','أفدني'];
+  const promoWords=['unsubscribe','newsletter','sale','offer','discount','marketing','اشترك','إلغاء الاشتراك','عرض','خصم'];
+  const followWords=['follow up','following up','reminder','remind','متابعة','تذكير'];
+  const score=(arr)=>arr.reduce((n,w)=>n+(text.includes(w)?1:0),0);
+  let urgent=score(urgentWords), important=score(importantWords), reply=score(replyWords), promo=score(promoWords), follow=score(followWords);
+  let category='info';
+  if(urgent>0 || (important>=2 && reply>0)) category='urgent';
+  else if(reply>0) category='reply';
+  else if(follow>0) category='follow';
+  else if(important>0) category='important';
+  else if(promo>0) category='promo';
+  if(m.labels?.includes('UNREAD') && category==='info' && important>0) category='important';
+  return category;
+}
+function categoryLabel(c){return ({urgent:'عاجل',important:'مهم',reply:'يحتاج رد',follow:'للمتابعة',info:'معلومات فقط',promo:'نشرة/ترويجية'})[c]||c;}
+function catClass(c){return ({urgent:'b-urgent',important:'b-important',reply:'b-reply',follow:'b-follow',info:'b-info',promo:'b-promo'})[c]||'b-info';}
+function dateLabel(ts){try{return new Intl.DateTimeFormat('ar-EG',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(Number(ts)))}catch(e){return ''}}
+function saveClientId(){localStorage.setItem('sgm_client_id',$('clientId').value.trim());notify('تم حفظ Client ID على هذا الجهاز. يمكنك الآن الاتصال بـ Gmail.','ok');}
+function loadSettings(){
+  $('clientId').value=localStorage.getItem('sgm_client_id')||'';
+  $('dateRange').value=localStorage.getItem('sgm_range')||'7';
+  $('includeSent').checked=localStorage.getItem('sgm_sent')==='1';
+  $('includeArchive').checked=localStorage.getItem('sgm_archive')!=='0';
+  $('includeSpamTrash').checked=localStorage.getItem('sgm_spam')==='1';
+}
+function persistSettings(){
+  localStorage.setItem('sgm_range',$('dateRange').value);localStorage.setItem('sgm_sent',$('includeSent').checked?'1':'0');localStorage.setItem('sgm_archive',$('includeArchive').checked?'1':'0');localStorage.setItem('sgm_spam',$('includeSpamTrash').checked?'1':'0');
+}
+async function connectGoogle(){
+  const clientId=$('clientId').value.trim()||localStorage.getItem('sgm_client_id');
+  if(!clientId){showSettings();$('notice').innerHTML='<div class="notice">أدخل Google OAuth Client ID أولاً من الإعدادات. لا تضع Client Secret فى ملف HTML.</div>';notify('لا يوجد Client ID محفوظ.','err');return;}
+  if(location.protocol==='file:'){notify('أنت تفتح الملف من الجهاز (file://). جوجل لا تسمح بـOAuth إلا من رابط https مسجَّل.','err');return;}
+  localStorage.setItem('sgm_client_id',clientId);
+  if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){notify('مكتبة Google Identity Services لم تُحمَّل. تحقق من الاتصال بالإنترنت ثم أعد المحاولة.','err');return;}
+  tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:clientId,scope:SCOPES,prompt:'consent',
+    callback:async(resp)=>{if(resp.error){var d=resp.error+(resp.error_description?(' — '+resp.error_description):'');if(String(resp.error).indexOf('origin')>-1||String(resp.error).indexOf('redirect')>-1){d+=' | سجّل هذا الأصل فى Google Cloud: '+location.origin;}notify('تعذر الحصول على صلاحية Gmail: '+d,'err');return;}accessToken=resp.access_token;notify('تم الاتصال بنجاح.','ok');await afterConnect();}
+  });
+  tokenClient.requestAccessToken({prompt:'consent'});
+}
+async function afterConnect(){
+  $('connectBtn').textContent='✓ Gmail متصل';$('connectBtn').style.background='#16a34a';$('authStatus').textContent='تم الاتصال. الصلاحيات المستخدمة: Gmail modify (قراءة/إدارة/إرسال).';
+  try{
+    profile=await api('/profile');$('accountText').textContent=profile.emailAddress||'Gmail متصل';$('welcome').textContent='متصل بـ '+(profile.emailAddress||'حساب Gmail')+' — يتم الآن تحليل الرسائل.';
+    await refreshMail();
+  }catch(e){handleApiError(e);}
+}
+async function api(path,opts={}){
+  if(!accessToken)throw new Error('NOT_AUTH');
+  const r=await fetch(GMAIL+path,{...opts,headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json',...(opts.headers||{})}});
+  if(!r.ok){let t=await r.text();throw new Error(r.status+' '+t)}return r.status===204?{}:r.json();
+}
+function buildQuery(){
+  persistSettings();const range=$('dateRange').value;
+  let q='';
+  if(range!=='all')q+=' newer_than:'+range+'d';
+  if(!$('includeSpamTrash').checked){} 
+  return q.trim();
+}
+async function listAll(q,max=150){
+  let out=[],token='';
+  do{
+    let url='/messages?maxResults=100'+(q?'&q='+encodeURIComponent(q):'')+($('includeSpamTrash').checked?'&includeSpamTrash=true':'');
+    if(token)url+='&pageToken='+encodeURIComponent(token);
+    const r=await api(url);out.push(...(r.messages||[]));token=r.nextPageToken||'';
+    if(out.length>=max)break;
+  }while(token);
+  return out.slice(0,max);
+}
+async function refreshMail(){
+  if(!accessToken){return}
+  $('mailList').innerHTML='<div class="empty">جاري جلب الرسائل وتحليلها…</div>';
+  try{
+    const q=buildQuery();
+    let ids=await listAll(q,150);
+    if($('includeSent').checked){const sent=await listAll((q?' '+q:'')+' in:sent',50);const map=new Map(ids.map(x=>[x.id,x]));sent.forEach(x=>map.set(x.id,x));ids=[...map.values()]}
+    const details=[];
+    for(let i=0;i<ids.length;i+=10){
+      const chunk=ids.slice(i,i+10);
+      const got=await Promise.all(chunk.map(x=>api('/messages/'+x.id+'?format=full').catch(()=>null)));
+      got.filter(Boolean).forEach(m=>{
+        const subject=header(m,'Subject')||'(بدون موضوع)', from=header(m,'From')||'', to=header(m,'To')||'';
+        const body=cleanText(bodyFromPayload(m.payload)||m.snippet||'');
+        const obj={id:m.id,threadId:m.threadId,msgid:header(m,'Message-Id')||header(m,'Message-ID')||'',labels:m.labelIds||[],subject,from,to,snippet:cleanText(m.snippet||''),body,internalDate:m.internalDate||Date.now()};
+        obj.category=classify(obj);details.push(obj);
+      });
+    }
+    mails=details.sort((a,b)=>Number(b.internalDate)-Number(a.internalDate));
+    render();renderInsights();
+  }catch(e){handleApiError(e);$('mailList').innerHTML='<div class="empty">حدث خطأ أثناء جلب البريد.</div>'}
+}
+function filtered(){
+  let arr=mails;
+  if(selectedFilter!=='all')arr=arr.filter(m=>m.category===selectedFilter);
+  if(localFilter!=='all')arr=arr.filter(m=>m.category===localFilter);
+  return arr;
+}
+function render(){
+  const unread=mails.filter(m=>m.labels.includes('UNREAD')).length;
+  $('sTotal').textContent=mails.length;$('sUnread').textContent=unread;
+  $('sUrgent').textContent=mails.filter(m=>m.category==='urgent').length;
+  $('sImportant').textContent=mails.filter(m=>m.category==='important').length;
+  $('sReply').textContent=mails.filter(m=>m.category==='reply').length;
+  $('sFollow').textContent=mails.filter(m=>m.category==='follow').length;
+  const arr=filtered().slice(0,50);
+  $('mailList').innerHTML=arr.length?arr.map(function(m){return ''
+    +'<div class="mail" onclick="openMail(\''+m.id+'\')">'
+    +'<div class="bar '+m.category+'"></div>'
+    +'<div><div class="sender">'+esc(m.from)+'</div><div class="subject">'+esc(m.subject)+'</div><div class="snippet">'+esc(m.snippet)+'</div><span class="badge '+catClass(m.category)+'">'+categoryLabel(m.category)+'</span></div>'
+    +'<div class="meta">'+dateLabel(m.internalDate)+'<br>'+(m.labels.includes('UNREAD')?'\u25CF غير مقروء':'')+'</div>'
+    +'</div>';}).join(''):'<div class="empty">لا توجد رسائل في هذا التصنيف.</div>';
+}
+function renderInsights(){
+  const u=mails.filter(m=>m.category==='urgent'),r=mails.filter(m=>m.category==='reply'),imp=mails.filter(m=>m.category==='important');
+  const items=[];
+  if(u.length)items.push(['urgent','هناك '+u.length+' رسالة مصنفة عاجلة. ابدئي بأحدث رسالة منها.']);
+  if(r.length)items.push(['reply','هناك '+r.length+' رسالة يُحتمل أن تحتاج ردًا. افتحيها لمراجعة اقتراح الرد قبل الإرسال.']);
+  if(imp.length)items.push(['important','هناك '+imp.length+' رسالة مهمة. راجعيها قبل الانتقال إلى الرسائل المعلوماتية.']);
+  const promos=mails.filter(m=>m.category==='promo').length;
+  if(promos)items.push(['promo',promos+' رسالة تبدو نشرات أو ترويجية ويمكن مراجعتها للأرشفة.']);
+  $('insights').innerHTML=items.length?items.map(function(x){return '<div class="insight"><span class="dot" style="background:var(--'+x[0]+')"></span><div>'+esc(x[1])+'</div></div>';}).join(''):'<div class="empty">لا توجد توصيات حاليًا.</div>';
+}
+function setFilter(f,el){selectedFilter=f;localFilter='all';document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');showView('dashboard');render();}
+function setLocalFilter(f,el){localFilter=f;document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));el.classList.add('active');render();}
+function showView(v,el){
+  $('dashboard').style.display=v==='dashboard'?'block':'none';$('reportSection').style.display=v==='report'?'block':'none';$('settingsSection').style.display=v==='settings'?'block':'none';
+  if(el){document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));el.classList.add('active')}
+}
+function runSearch(){
+  const q=$('searchInput').value.trim();if(!q)return;
+  if(!accessToken){notify('اتصل بـ Gmail أولاً.','err');return}
+  api('/messages?maxResults=50&q='+encodeURIComponent(q)).then(async r=>{
+    const got=await Promise.all((r.messages||[]).slice(0,50).map(x=>api('/messages/'+x.id+'?format=full')));
+    mails=got.map(m=>({id:m.id,threadId:m.threadId,msgid:header(m,'Message-Id')||header(m,'Message-ID')||'',labels:m.labelIds||[],subject:header(m,'Subject')||'(بدون موضوع)',from:header(m,'From'),to:header(m,'To'),snippet:cleanText(m.snippet||''),body:cleanText(bodyFromPayload(m.payload)||''),internalDate:m.internalDate||Date.now()}));
+    mails.forEach(m=>m.category=classify(m));selectedFilter='all';localFilter='all';render();renderInsights();
+  }).catch(handleApiError);
+}
+function openMail(id){
+  const m=mails.find(x=>x.id===id);if(!m)return;
+  var mid=m.id;
+  $('mailModalBox').innerHTML=''
+  +'<div class="modalhead"><div><h2 style="margin:0">'+esc(m.subject)+'</h2><div class="sub">'+esc(m.from)+' \u2022 '+dateLabel(m.internalDate)+' \u2022 <span class="badge '+catClass(m.category)+'">'+categoryLabel(m.category)+'</span></div></div><button class="close" onclick="closeModal()">\u2715</button></div>'
+  +'<div class="bodymail">'+esc(m.body||m.snippet)+'</div>'
+  +'<div class="replybox"><b>اقتراح ذكي للرد</b><div class="sub">اقتراح أولي مبني على محتوى الرسالة. راجعه وعدله قبل الإرسال.</div>'
+  +'<div class="row">'
+  +'<button class="chip active" onclick="suggestReply(\''+mid+'\',\'formal\')">رسمي</button>'
+  +'<button class="chip" onclick="suggestReply(\''+mid+'\',\'friendly\')">مهني ودود</button>'
+  +'<button class="chip" onclick="suggestReply(\''+mid+'\',\'short\')">مختصر</button>'
+  +'<button class="chip" onclick="suggestReply(\''+mid+'\',\'detailed\')">تفصيلي</button>'
+  +'<button class="chip" onclick="suggestReply(\''+mid+'\',\'accept\')">قبول</button>'
+  +'<button class="chip" onclick="suggestReply(\''+mid+'\',\'decline\')">رفض مهذب</button>'
+  +'</div>'
+  +'<div class="compose"><textarea id="replyText" placeholder="سيظهر اقتراح الرد هنا…"></textarea><div class="row" style="justify-content:flex-start;margin-top:8px">'
+  +'<button class="btn green" onclick="sendReply(\''+mid+'\')">إرسال الرد</button>'
+  +'<button class="btn" onclick="markRead(\''+mid+'\')">تحديد كمقروء</button>'
+  +'<button class="btn" onclick="archiveMail(\''+mid+'\')">أرشفة</button>'
+  +'</div></div></div>';
+  $('mailModal').classList.add('show');
+}
+function closeModal(){$('mailModal').classList.remove('show')}
+function suggestReply(id,style){
+  const m=mails.find(x=>x.id===id);if(!m)return;
+  const s=(m.subject+' '+m.body).toLowerCase();let text='';
+  if(style==='accept')text='Dear '+nameFrom(m.from)+',\n\nThank you for your email. I am pleased to confirm my acceptance. I appreciate the invitation and look forward to it.\n\nBest regards,';
+  else if(style==='decline')text='Dear '+nameFrom(m.from)+',\n\nThank you very much for your invitation. Unfortunately, I will not be able to participate on this occasion. I truly appreciate your kind invitation and hope to have the opportunity to participate in the future.\n\nBest regards,';
+  else if(style==='short')text='Dear '+nameFrom(m.from)+',\n\nThank you for your email. I have received it and will review the matter and get back to you shortly.\n\nBest regards,';
+  else if(style==='friendly')text='Dear '+nameFrom(m.from)+',\n\nMany thanks for your email. I really appreciate you reaching out. I will review the details and get back to you shortly.\n\nBest regards,';
+  else if(style==='detailed')text='Dear '+nameFrom(m.from)+',\n\nThank you for your email and for sharing the details. I have reviewed the message and appreciate the information provided. I will consider the requested points carefully and will get back to you with the necessary feedback or confirmation.\n\nBest regards,';
+  else text='Dear '+nameFrom(m.from)+',\n\nThank you for your email. I appreciate your message and the information provided. I will review the details and get back to you as soon as possible.\n\nBest regards,';
+  $('replyText').value=text;
+}
+function nameFrom(f){return (f||'Colleague').replace(/<.*?>/,'').replace(/["']/g,'').trim()||'Colleague'}
+function base64url(s){return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+async function sendReply(id){
+  const m=mails.find(x=>x.id===id),body=$('replyText').value.trim();if(!m||!body){notify('اكتب نص الرد أولاً.','err');return}
+  var myAddr=(profile&&profile.emailAddress)?profile.emailAddress:'';
+  var ref=m.msgid||'';
+  var raw='From: '+myAddr+'\r\n'
+    +'To: '+m.from+'\r\n'
+    +'Subject: Re: '+m.subject.replace(/^Re:\s*/i,'')+'\r\n'
+    +(ref?('In-Reply-To: '+ref+'\r\nReferences: '+ref+'\r\n'):'')
+    +'Content-Type: text/plain; charset="UTF-8"\r\n\r\n'+body;
+  try{await api('/messages/send',{method:'POST',body:JSON.stringify({raw:base64url(raw),threadId:m.threadId})});notify('تم إرسال الرد بنجاح.','ok');closeModal();await refreshMail()}catch(e){handleApiError(e)}
+}
+async function markRead(id){try{await api('/messages/'+id+'/modify',{method:'POST',body:JSON.stringify({removeLabelIds:['UNREAD']})});closeModal();await refreshMail()}catch(e){handleApiError(e)}}
+async function archiveMail(id){try{await api('/messages/'+id+'/modify',{method:'POST',body:JSON.stringify({removeLabelIds:['INBOX']})});closeModal();await refreshMail()}catch(e){handleApiError(e)}}
+function showReport(){
+  if(!mails.length){showView('report');$('reportContent').innerHTML='<div class="empty">اتصلي بـ Gmail واجلبي الرسائل أولًا.</div>';return}
+  showView('report');
+  const u=mails.filter(m=>m.category==='urgent'),im=mails.filter(m=>m.category==='important'),r=mails.filter(m=>m.category==='reply'),f=mails.filter(m=>m.category==='follow'),p=mails.filter(m=>m.category==='promo');
+  var rows=mails.filter(function(m){return ['urgent','important','reply','follow'].includes(m.category);}).slice(0,30).map(function(m){
+    return '<tr><td>'+categoryLabel(m.category)+'</td><td>'+esc(m.from)+'</td><td>'+esc(m.subject)+'</td><td>'+dateLabel(m.internalDate)+'</td></tr>';}).join('');
+  $('reportContent').innerHTML=''
+  +'<h2>تقرير إدارة البريد الإلكتروني</h2><p>تاريخ التقرير: '+new Date().toLocaleString('ar-EG')+'<br>الحساب: '+esc((profile&&profile.emailAddress)||'غير متصل')+'</p>'
+  +'<h3>الملخص التنفيذي</h3><table><tr><th>المؤشر</th><th>القيمة</th></tr>'
+  +'<tr><td>إجمالي الرسائل محل المراجعة</td><td>'+mails.length+'</td></tr>'
+  +'<tr><td>غير المقروء</td><td>'+mails.filter(function(m){return m.labels.includes('UNREAD');}).length+'</td></tr>'
+  +'<tr><td>عاجل</td><td>'+u.length+'</td></tr>'
+  +'<tr><td>مهم</td><td>'+im.length+'</td></tr>'
+  +'<tr><td>يحتاج رد</td><td>'+r.length+'</td></tr>'
+  +'<tr><td>للمتابعة</td><td>'+f.length+'</td></tr>'
+  +'<tr><td>نشرات/ترويجية</td><td>'+p.length+'</td></tr></table>'
+  +'<h3>تحليل الإجراءات المطلوبة</h3><p>'+esc(buildAnalysis())+'</p>'
+  +'<h3>أهم الرسائل</h3><table><tr><th>التصنيف</th><th>المرسل</th><th>الموضوع</th><th>التاريخ</th></tr>'+rows+'</table>'
+  +'<h3>ملاحظة منهجية</h3><p>هذا الإصدار يستخدم قواعد محلية قابلة للتفسير لتحديد الأولوية، ويعرض النتيجة كتوصية لا كقرار نهائي. قبل أي إرسال أو أرشفة أو تعديل يتم طلب إجراء المستخدم.</p>';
+}
+function buildAnalysis(){
+  const u=mails.filter(m=>m.category==='urgent').length,r=mails.filter(m=>m.category==='reply').length,im=mails.filter(m=>m.category==='important').length;
+  if(!u&&!r&&!im)return 'لا توجد حاليًا رسائل واضحة تحتاج إلى تدخل عاجل وفق قواعد التحليل المحلية.';
+  return 'الأولوية الأولى هي مراجعة '+u+' رسالة عاجلة، ثم التعامل مع '+r+' رسالة يحتمل أنها تحتاج ردًا. توجد أيضًا '+im+' رسالة مهمة تستحق المراجعة. لا يتم إرسال أي رد أو أرشفة أي رسالة تلقائيًا دون تأكيدك.';
+}
+async function exportPDF(){
+  if(!mails.length){notify('لا يوجد تقرير لتصديره.','err');return}
+  if(!window.jspdf){notify('مكتبة PDF لم تُحمَّل. تحقق من الاتصال بالإنترنت.','err');return}
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  doc.setFont('helvetica');doc.setFontSize(18);doc.text('Smart Gmail Manager Report',200,18,{align:'right'});
+  doc.setFontSize(10);doc.text(new Date().toLocaleString('en-GB'),200,26,{align:'right'});
+  let y=38;const lines=[
+    'Total reviewed: '+mails.length,
+    'Unread: '+mails.filter(function(m){return m.labels.includes('UNREAD');}).length,
+    'Urgent: '+mails.filter(function(m){return m.category==='urgent';}).length,
+    'Important: '+mails.filter(function(m){return m.category==='important';}).length,
+    'Needs reply: '+mails.filter(function(m){return m.category==='reply';}).length,
+    'Follow-up: '+mails.filter(function(m){return m.category==='follow';}).length
+  ];
+  lines.forEach(t=>{doc.text(t,200,y,{align:'right'});y+=7});
+  y+=4;doc.text('Action analysis:',200,y,{align:'right'});y+=7;
+  const a=doc.splitTextToSize(buildAnalysis(),175);doc.text(a,200,y,{align:'right'});y+=a.length*5+7;
+  doc.text('Priority messages:',200,y,{align:'right'});y+=7;doc.setFontSize(8);
+  mails.filter(m=>['urgent','important','reply','follow'].includes(m.category)).slice(0,25).forEach(m=>{
+    var t='['+categoryEn(m.category)+'] '+m.subject.replace(/[^\x20-\x7E]/g,' ')+' - '+m.from.replace(/[^\x20-\x7E]/g,' ');var l=doc.splitTextToSize(t,175);
+    if(y>275){doc.addPage();y=18}doc.text(l,200,y,{align:'right'});y+=l.length*4+3;
+  });
+  doc.save('Smart_Gmail_Manager_Report.pdf');
+}
+function showSettings(){loadSettings();showView('settings')}
+function disconnect(){accessToken=null;profile=null;mails=[];$('accountText').textContent='غير متصل';$('connectBtn').textContent='🔐 الاتصال بـ Gmail';$('connectBtn').style.background='var(--primary)';$('authStatus').textContent='تم تسجيل الخروج من جلسة التطبيق.';render();showView('dashboard')}
+function handleApiError(e){
+  var msg=String(e&&e.message||e);
+  if(msg.indexOf('401')>-1){accessToken=null;notify('انتهت صلاحية الجلسة (401). أعد الاتصال بـ Gmail.','err');return}
+  if(msg.indexOf('403')>-1){notify('رفض صلاحيات (403): غالباً Gmail API غير مفعَّل فى المشروع، أو حسابك ليس ضمن Test users. النص: '+msg.slice(0,220),'err');return}
+  if(msg.indexOf('Failed to fetch')>-1){notify('تعذر الوصول لخوادم Gmail (شبكة أو حجب). النص: '+msg.slice(0,220),'err');return}
+  notify('خطأ: '+msg.slice(0,260),'err');
+}
+window.addEventListener('load',function(){loadSettings();var o=$('originBox');if(o){o.textContent=location.origin}});
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(err){console.warn('sw',err)})})}
+$('mailModal').addEventListener('click',e=>{if(e.target.id==='mailModal')closeModal()});
+</script>
+</body>
+</html>
